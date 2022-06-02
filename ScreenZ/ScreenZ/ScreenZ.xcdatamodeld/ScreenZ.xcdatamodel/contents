@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E230" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Preference" representedClassName="Preference" syncable="YES" codeGenerationType="class">
+        <attribute name="enableAutoSetup" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="enableMenuBar" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="Video" representedClassName="Video" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="photo" optional="YES" attributeType="URI"/>
+        <attribute name="url" optional="YES" attributeType="URI"/>
+    </entity>
+    <elements>
+        <element name="Video" positionX="-63" positionY="-9" width="128" height="74"/>
+        <element name="Preference" positionX="-54" positionY="27" width="128" height="59"/>
+    </elements>
+</model>

@@ -1,0 +1,66 @@
+/* 
+  Localizable.strings
+  ScreenZ
+
+  Created by 周源坤 on 2022/6/2.
+  
+*/
+
+/* No comment provided by engineer. */
+"Add themes" = "添加主题";
+
+/* No comment provided by engineer. */
+"All rights reserved to Celeglow" = "Celeglow保留一切权利";
+
+/* No comment provided by engineer. */
+"All themes" = "所有主题";
+
+/* No comment provided by engineer. */
+"Celeglow" = "Celeglow";
+
+/* No comment provided by engineer. */
+"Clean trash videos on this app's folder." = "清除本应用的垃圾文件";
+
+/* No comment provided by engineer. */
+"Clean video storage" = "优化存储空间";
+
+/* No comment provided by engineer. */
+"Delete all themes" = "删除所有主题";
+
+/* No comment provided by engineer. */
+"Designed by" = "设计者";
+
+/* No comment provided by engineer. */
+"Enable wallpaper extends to menu bar " = "开启壁纸延伸至菜单栏";
+
+/* No comment provided by engineer. */
+"Remove all your videos stored in this app." = "删除所有已存的视频";
+
+/* No comment provided by engineer. */
+"Settings" = "设置";
+
+"Choose video" = "选择视频";
+
+"Apply video" = "使用视频";
+
+"Save video" = "保存视频";
+
+"Show panel" = "打开面板";
+
+"Quit" = "退出";
+
+"Please enter a name for theme" = "请给此主题命名";
+
+"Save" = "保存";
+
+"Cancel" = "取消";
+
+"Enter your theme name" = "输入主题名";
+
+"Save success" = "保存成功";
+
+"OK" = "好";
+
+"Name invalid (null or duplicate)" = "名字不合规（空值或重复）";
+
+"Operation success" = "操作成功";   
