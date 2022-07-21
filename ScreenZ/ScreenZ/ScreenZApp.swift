@@ -40,10 +40,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        constructFirstTime()
         constructMenu()
         constructWallpaper()
         constructPlayer(Bundle.main.url(forResource: "demo", withExtension: "mp4")!)
-        constructFirstTime()
         //constructAutoStart()
     }
     
