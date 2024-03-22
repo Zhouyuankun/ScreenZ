@@ -35,7 +35,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow!
     var playerView: AVPlayerView!
     var player: AVPlayer!
-    var isActive = true
     var mainWindow: NSWindow?
     
 
@@ -69,7 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.isMovableByWindowBackground = false
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)))
         window.ignoresMouseEvents = true
-        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        window.collectionBehavior = [.stationary]
         window.contentView = playerView
         window.center()
         
@@ -167,6 +166,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return result
     }
     
+    func testWallpaperWindowVisibility() -> Bool {
+        let options = CGWindowListOption(arrayLiteral: CGWindowListOption.optionOnScreenOnly)
+        let windowListInfo = CGWindowListCopyWindowInfo(options, CGWindowID(0))
+        guard let infoList = windowListInfo as NSArray? as? [[String: AnyObject]] else { return true }
+        let targetN = infoList.filter { item in
+            let wBounds = item["kCGWindowNumber"]
+            let winid = wBounds as? Int
+            if let nonnilid = winid, nonnilid == window.windowNumber {
+                return true
+            }
+            return false
+        }
+        return targetN.isEmpty == false
+    }
+    
     @objc func changeVideo(notification: NSNotification) {
         if let url = notification.object as? URL {
             playVideo(url)
@@ -203,14 +217,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func spaceChanged() {
-        if isActive {
-            player.pause()
-            print("pause")
-        } else {
+        if testWallpaperWindowVisibility() {
             player.play()
             print("play")
+        } else {
+            player.pause()
+            print("pause")
         }
-        isActive.toggle()
     }
 }
 
