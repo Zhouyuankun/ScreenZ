@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B61CFB1E2BAED9B70031FFF3 /* black.jpg in Resources */ = {isa = PBXBuildFile; fileRef = B61CFB1D2BAED9B70031FFF3 /* black.jpg */; };
 		B64DC25A28460B0D0063B8CF /* ScreenZApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC25928460B0D0063B8CF /* ScreenZApp.swift */; };
 		B64DC25C28460B0D0063B8CF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC25B28460B0D0063B8CF /* ContentView.swift */; };
 		B64DC25E28460B0D0063B8CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B64DC25D28460B0D0063B8CF /* Assets.xcassets */; };
@@ -23,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B61CFB1D2BAED9B70031FFF3 /* black.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = black.jpg; sourceTree = "<group>"; };
 		B64DC25628460B0D0063B8CF /* ScreenZ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenZ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B64DC25928460B0D0063B8CF /* ScreenZApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenZApp.swift; sourceTree = "<group>"; };
 		B64DC25B28460B0D0063B8CF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 		B64DC25828460B0D0063B8CF /* ScreenZ */ = {
 			isa = PBXGroup;
 			children = (
+				B61CFB1D2BAED9B70031FFF3 /* black.jpg */,
 				B64DC2AF284897AC0063B8CF /* Localizable.strings */,
 				B64DC26D2846199B0063B8CF /* Info.plist */,
 				B64DC25928460B0D0063B8CF /* ScreenZApp.swift */,
@@ -163,6 +166,7 @@
 				B64DC26128460B0D0063B8CF /* Preview Assets.xcassets in Resources */,
 				B64DC25E28460B0D0063B8CF /* Assets.xcassets in Resources */,
 				B64DC26F284625BA0063B8CF /* demo.png in Resources */,
+				B61CFB1E2BAED9B70031FFF3 /* black.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,7 +254,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -305,7 +309,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
