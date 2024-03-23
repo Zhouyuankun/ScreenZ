@@ -15,7 +15,11 @@ struct AllThemeView: View {
     private var videos: FetchedResults<Video>
     
     @State var targetVideoName: String = ""
-    
+    @State var showDeleteAlert: Bool = false
+    @State var showRenameAlert: Bool = false
+    @State var inputName: String = ""
+    @State var statusInfo: AddThemeStatus?
+    @State var showStatusAlert: Bool = false
     var body: some View {
         List {
             ForEach(videos) { video in
@@ -28,8 +32,49 @@ struct AllThemeView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 192 * 2, height: 108 * 2)
+                    
+                    HStack {
+                        CircleButton(color: .green, systemName: "paintbrush") {
+                            guard let url = video.url else {
+                                return
+                            }
+                            NotificationCenter.default.post(name: Notification.Name("videourlChanged"), object: url)
+                            targetVideoName = video.name!
+                        }
+                        
+                        CircleButton(color: .yellow, systemName: "pencil") {
+                            showRenameAlert = true
+                        }
+                        .alert("Coming Soon", isPresented: $showRenameAlert) {
+//                            TextField("Enter name here", text: $inputName)
+//                            Button("Rename") {
+//                                if inputName == "" || PersistenceController.shared.fileExists(inputName) {
+//                                    statusInfo = AddThemeStatus(type: .Error, description: "Name invalid (null or duplicate)")
+//                                    showStatusAlert = true
+//                                    return
+//                                }
+//                                
+//                                PersistenceController.shared.renameVideo(src: video.name!, dst: inputName)
+//                                
+//                            }
+                            Button("Cancel") {
+                                
+                            }
+                        }
+                        
+                        CircleButton(color: .red, systemName: "trash") {
+                            showDeleteAlert = true
+                        }
+                        .alert("Delete this theme ?", isPresented: $showDeleteAlert) {
+                            Button("Delete", role: .destructive) {
+                                let viewContext = PersistenceController.shared.container.viewContext
+                                viewContext.delete(video)
+                                try! viewContext.save()
+                            }
+                        }
+                    }
+                    .frame(width: 200)
                 }
-                .shadow(color: Color(nsColor: .labelColor), radius: targetVideoName == video.name ? 10: 0, x: 0, y: targetVideoName == video.name ? 10: 0)
                 .background {
                     ZStack {
                         Image(nsImage: NSImage(contentsOf: video.photo!)!)
@@ -38,28 +83,28 @@ struct AllThemeView: View {
                     }
                     .ignoresSafeArea()
                 }
-                .onTapGesture {
-                    guard let url = video.url else {
-                        return
-                    }
-                    NotificationCenter.default.post(name: Notification.Name("videourl"), object: url)
-                }
-                .onHover { _ in
-                    targetVideoName = video.name!
-                }
-                .onLongPressGesture {
-                    let alert = NSAlert()
-                    alert.messageText = "Are you sure to delete ?"
-                    alert.addButton(withTitle: "Sure")
-                    alert.addButton(withTitle: "Cancel")
-                    if alert.runModal() == NSApplication.ModalResponse.alertFirstButtonReturn {
-                        let context = PersistenceController.shared.container.viewContext
-                        context.delete(video)
-                        try! context.save()
-                    }
-                }
             }
         }
     }
 }
 
+struct CircleButton : View {
+    
+    let color: Color
+    let systemName: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action, label: {
+            ZStack {
+                Circle()
+                    .fill(color)
+                Image(systemName: systemName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .padding()
+            }
+        })
+        .buttonStyle(.plain)
+    }
+}
