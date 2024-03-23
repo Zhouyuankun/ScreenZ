@@ -31,7 +31,7 @@
 "Designed by" = "设计者";
 
 /* No comment provided by engineer. */
-"Enable wallpaper extends to menu bar " = "开启壁纸延伸至菜单栏";
+"Enable wallpaper extends to menu bar" = "开启壁纸延伸至菜单栏";
 
 /* No comment provided by engineer. */
 "Remove all your videos stored in this app." = "删除所有已存的视频";
@@ -64,3 +64,5 @@
 "Name invalid (null or duplicate)" = "名字不合规（空值或重复）";
 
 "Operation success" = "操作成功";   
+
+"Enable app launch at login" = "开机自启动";
