@@ -10,7 +10,17 @@ import ServiceManagement
 
 struct SettingsView: View {
     @State var enableMenuBar = true
-    //@State var enableAutoSetup = true
+    @State var enableLaunchAtLogin = true
+    
+    func updateEnableMenuBar() {
+        let context = PersistenceController.shared.container.viewContext
+        let fetchRequest = Preference.fetchRequest()
+        let result = try! context.fetch(fetchRequest).first!
+        result.enableMenuBar = enableMenuBar
+        try! context.save()
+        
+        NotificationCenter.default.post(name: Notification.Name("MenuBarSettingChanged"), object: nil)
+    }
     
     var body: some View {
         
@@ -22,30 +32,32 @@ struct SettingsView: View {
                     .frame(width: 100, height: 100)
                 VStack {
                     HStack {
-                        Text("Enable wallpaper extends to menu bar ")
+                        Text("Enable wallpaper extends to menu bar")
                         Spacer()
                         Toggle("", isOn: $enableMenuBar)
-                        .onChange(of: enableMenuBar) { _ in
-                            let context = PersistenceController.shared.container.viewContext
-                            let fetchRequest = Preference.fetchRequest()
-                            let result = try! context.fetch(fetchRequest).first!
-                            result.enableMenuBar = enableMenuBar
-                            try! context.save()
+                        .onChange(of: enableMenuBar, updateEnableMenuBar)
+                    }
+                    HStack {
+                        Text("Enable app launch at login")
+                        Spacer()
+                        Toggle("", isOn: $enableLaunchAtLogin)
+                        .onChange(of: enableLaunchAtLogin) {
+                            do {
+                                if enableLaunchAtLogin {
+                                    try SMAppService.mainApp.register()
+                                } else {
+                                    try SMAppService.mainApp.unregister()
+                                }
+                            } catch {
+                                Swift.print(error.localizedDescription)
+                            }
                         }
                     }
-        //            HStack {
-        //                Text("Enable app auto start ")
-        //                Toggle("", isOn: $enableAutoSetup)
-        //                .onChange(of: enableAutoSetup) { _ in
-        //                    SMLoginItemSetEnabled("com.celeglow.ScreenZ" as CFString,
-        //                    enableAutoSetup)
-        //                }
-        //            }
                     HStack {
                         Text("Clean trash videos on this app's folder.")
                         Spacer()
                         Button {
-                            cleanFolder()
+                            PersistenceController.shared.cleanFolder()
                             doneResponse()
                         } label: {
                             Text("Clean video storage")
@@ -55,7 +67,7 @@ struct SettingsView: View {
                         Text("Remove all your videos stored in this app.")
                         Spacer()
                         Button {
-                            deleteAllThemes()
+                            PersistenceController.shared.deleteAllThemes()
                             doneResponse()
                         } label: {
                             Text("Delete all themes")
@@ -89,39 +101,8 @@ struct SettingsView: View {
             let fetchRequest = Preference.fetchRequest()
             let result = try! context.fetch(fetchRequest).first!
             enableMenuBar = result.enableMenuBar
-            //enableAutoSetup = result.enableAutoSetup
+            enableLaunchAtLogin = result.enableAutoSetup
         }
-    }
-    
-    func cleanFolder() {
-        let fetchRequest = Video.fetchRequest()
-        let viewContext = PersistenceController.shared.container.viewContext
-        let result = try! viewContext.fetch(fetchRequest)
-        let names = result.map {$0.name!}
-        let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileURLs = try! FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil,options: .skipsHiddenFiles)
-        let trashs = fileURLs.filter {!names.contains($0.getFileName()!)}
-        for trash in trashs {
-            try! FileManager.default.removeItem(at: trash)
-        }
-    }
-    
-    func deleteAllThemes() {
-        let fetchRequest = Video.fetchRequest()
-        let viewContext = PersistenceController.shared.container.viewContext
-        let result = try! viewContext.fetch(fetchRequest)
-        for res in result {
-            viewContext.delete(res)
-        }
-        
-        let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        
-        do {
-            let fileURLs = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil,options: .skipsHiddenFiles)
-            for fileURL in fileURLs {
-                try FileManager.default.removeItem(at: fileURL)
-            }
-        } catch  { print(error) }
     }
     
     func doneResponse() {
