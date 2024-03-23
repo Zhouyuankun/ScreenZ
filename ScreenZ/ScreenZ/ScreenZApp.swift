@@ -22,8 +22,6 @@ struct ScreenZApp: App {
     }
 }
 
-
-
 extension Notification.Name {
     static let killLauncher = Notification.Name("killLauncher")
 }
@@ -36,14 +34,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var playerView: AVPlayerView!
     var player: AVPlayer!
     var mainWindow: NSWindow?
+    var currentVideoURL: URL?
     
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        constructFirstTime()
+        let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
+        if !launchedBefore  {
+            constructFirstTime()
+            UserDefaults.standard.set(true, forKey: "launchedBefore")
+        }
         constructMenu()
         constructWallpaper()
-        constructPlayer(Bundle.main.url(forResource: "demo", withExtension: "mp4")!)
-        //constructAutoStart()
+        constructPlayer()
+        constructObervers()
+        
+        //PersistenceController.shared.deleteAllEntryVideo()
     }
     
     func constructMenu() {
@@ -76,14 +81,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         windowController.showWindow(self)
     }
     
-    func constructPlayer(_ url: URL) {
-        playVideo(url)
+    func constructObervers() {
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: nil, queue: nil) {[weak self] noti in
-            guard let strongSelf = self else { return }
-            strongSelf.player.seek(to: CMTime.zero)
-            strongSelf.player.play()
+            self?.player.seek(to: CMTime.zero)
+            self?.player.play()
         }
-        NotificationCenter.default.addObserver(self, selector: #selector(changeVideo), name: Notification.Name("videourl"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(changeVideo), name: Notification.Name("videourlChanged"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshVideo), name: Notification.Name("MenuBarSettingChanged"), object: nil)
         NSWorkspace.shared.notificationCenter.addObserver(
                 self,
                 selector: #selector(spaceChanged),
@@ -100,6 +104,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSWorkspace.willSleepNotification, object: nil)
     }
     
+    func constructPlayer() {
+        currentVideoURL = PersistenceController.shared.getCurrentVideoURL()
+        playVideo(currentVideoURL)
+    }
+    
     func constructFirstTime() {
         let context = PersistenceController.shared.container.viewContext
         let fetchRequest = Preference.fetchRequest()
@@ -108,37 +117,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let pref = Preference(context: context)
             pref.enableAutoSetup = false
             pref.enableMenuBar = false
+            pref.currentVideoURL = nil
         }
+        
     }
     
-//    func constructAutoStart() {
-//        let launcherAppId = "com.celeglow.Launch"
-//        let runningApps = NSWorkspace.shared.runningApplications
-//        let isRunning = !runningApps.filter { $0.bundleIdentifier == launcherAppId }.isEmpty
-//
-//        SMLoginItemSetEnabled(launcherAppId as CFString, true)
-//
-//        if isRunning {
-//            DistributedNotificationCenter.default().post(name: .killLauncher, object: Bundle.main.bundleIdentifier!)
-//        }
-//    }
-    
-    func playVideo(_ url: URL) {
-        let url = url
-
-        let filepath = (url.getFileName()!+".png").foundFile(in: .documentDirectory)
-        if FileManager.default.fileExists(atPath: filepath.path) {
-            refreshDesktop(filepath)
+    func playVideo(_ videoURLOpt: URL?) {
+        var videoURL: URL
+        if videoURLOpt != nil {
+            videoURL = videoURLOpt!
+            currentVideoURL = videoURL
+            PersistenceController.shared.storeURL(url: videoURL)
+            refreshDesktop((videoURL.getFileName()!+".png").foundFile(in: .documentDirectory))
         } else {
-            if url == Bundle.main.url(forResource: "demo", withExtension: "mp4")! {
-                refreshDesktop(Bundle.main.url(forResource: "demo", withExtension: "png")!)
-            } else {
-                refreshDesktop(("tmp.png").foundFile(in: .documentDirectory))
-            }
-            
+            videoURL = Bundle.main.url(forResource: "demo", withExtension: "mp4")!
+            refreshDesktop(Bundle.main.url(forResource: "demo", withExtension: "png")!)
         }
             
-        player = AVPlayer(url: url)
+        player = AVPlayer(url: videoURL)
         player.isMuted = true
         playerView.player = player
         playerView.controlsStyle = AVPlayerViewControlsStyle.none
@@ -154,8 +150,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             usleep(useconds_t(0.4 * Double(USEC_PER_SEC)))
             try? NSWorkspace.shared.setDesktopImageURL(dstURL, for: NSScreen.main!, options: [:])
         } else {
-            let transparentImage = URL(fileURLWithPath: "/System/Library/PreferencePanes/DesktopScreenEffectsPref.prefPane/Contents/Resources/DesktopPictures.prefPane/Contents/Resources/Transparent.tiff")
-            try? NSWorkspace.shared.setDesktopImageURL(transparentImage, for: NSScreen.main!, options: [.fillColor:NSColor.black])
+            try? NSWorkspace.shared.setDesktopImageURL(Bundle.main.url(forResource: "black", withExtension: "jpg")!, for: NSScreen.main!, options: [:])
         }
     }
     
@@ -182,9 +177,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func changeVideo(notification: NSNotification) {
-        if let url = notification.object as? URL {
-            playVideo(url)
-        }
+        let url = notification.object as? URL
+        playVideo(url)
+    }
+    
+    @objc func refreshVideo(notification: NSNotification) {
+        playVideo(currentVideoURL)
     }
     
     @objc func onWakeNote(note: NSNotification) {
