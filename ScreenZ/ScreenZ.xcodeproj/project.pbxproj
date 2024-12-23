@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,15 +12,13 @@
 		B64DC25C28460B0D0063B8CF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC25B28460B0D0063B8CF /* ContentView.swift */; };
 		B64DC25E28460B0D0063B8CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B64DC25D28460B0D0063B8CF /* Assets.xcassets */; };
 		B64DC26128460B0D0063B8CF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B64DC26028460B0D0063B8CF /* Preview Assets.xcassets */; };
-		B64DC26328460B0D0063B8CF /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC26228460B0D0063B8CF /* Persistence.swift */; };
-		B64DC26628460B0D0063B8CF /* ScreenZ.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B64DC26428460B0D0063B8CF /* ScreenZ.xcdatamodeld */; };
 		B64DC26F284625BA0063B8CF /* demo.png in Resources */ = {isa = PBXBuildFile; fileRef = B64DC26E284625BA0063B8CF /* demo.png */; };
-		B64DC27428464B920063B8CF /* AddThemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC27328464B920063B8CF /* AddThemeView.swift */; };
-		B64DC27628464C820063B8CF /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC27528464C820063B8CF /* utils.swift */; };
 		B64DC27728464FB80063B8CF /* demo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = B64DC270284625BF0063B8CF /* demo.mp4 */; };
-		B64DC2792846738E0063B8CF /* AllThemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC2782846738E0063B8CF /* AllThemeView.swift */; };
-		B64DC27B284673EA0063B8CF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC27A284673EA0063B8CF /* SettingsView.swift */; };
 		B64DC2AD284897AC0063B8CF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B64DC2AF284897AC0063B8CF /* Localizable.strings */; };
+		B6D2437E2D14607200267EC4 /* UserDefaults+Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D2437D2D14607200267EC4 /* UserDefaults+Helper.swift */; };
+		B6D243B52D1477C100267EC4 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC27A284673EA0063B8CF /* SettingsView.swift */; };
+		B6D243B62D1477C600267EC4 /* AddThemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC27328464B920063B8CF /* AddThemeView.swift */; };
+		B6D243B72D1477CC00267EC4 /* AllThemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64DC2782846738E0063B8CF /* AllThemeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,19 +28,21 @@
 		B64DC25B28460B0D0063B8CF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B64DC25D28460B0D0063B8CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B64DC26028460B0D0063B8CF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		B64DC26228460B0D0063B8CF /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		B64DC26528460B0D0063B8CF /* ScreenZ.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ScreenZ.xcdatamodel; sourceTree = "<group>"; };
 		B64DC26728460B0D0063B8CF /* ScreenZ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ScreenZ.entitlements; sourceTree = "<group>"; };
 		B64DC26D2846199B0063B8CF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B64DC26E284625BA0063B8CF /* demo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = demo.png; sourceTree = "<group>"; };
 		B64DC270284625BF0063B8CF /* demo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = demo.mp4; sourceTree = "<group>"; };
 		B64DC27328464B920063B8CF /* AddThemeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddThemeView.swift; sourceTree = "<group>"; };
-		B64DC27528464C820063B8CF /* utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = utils.swift; sourceTree = "<group>"; };
 		B64DC2782846738E0063B8CF /* AllThemeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllThemeView.swift; sourceTree = "<group>"; };
 		B64DC27A284673EA0063B8CF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B64DC2AE284897AC0063B8CF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B64DC2B02848982A0063B8CF /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B6D2437D2D14607200267EC4 /* UserDefaults+Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+Helper.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B6D2437F2D1462D600267EC4 /* Model */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Model; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		B64DC25328460B0D0063B8CF /* Frameworks */ = {
@@ -74,22 +74,21 @@
 		B64DC25828460B0D0063B8CF /* ScreenZ */ = {
 			isa = PBXGroup;
 			children = (
+				B6D2437F2D1462D600267EC4 /* Model */,
 				B61CFB1D2BAED9B70031FFF3 /* black.jpg */,
 				B64DC2AF284897AC0063B8CF /* Localizable.strings */,
 				B64DC26D2846199B0063B8CF /* Info.plist */,
 				B64DC25928460B0D0063B8CF /* ScreenZApp.swift */,
 				B64DC25B28460B0D0063B8CF /* ContentView.swift */,
 				B64DC25D28460B0D0063B8CF /* Assets.xcassets */,
-				B64DC26228460B0D0063B8CF /* Persistence.swift */,
 				B64DC26728460B0D0063B8CF /* ScreenZ.entitlements */,
 				B64DC270284625BF0063B8CF /* demo.mp4 */,
 				B64DC26E284625BA0063B8CF /* demo.png */,
-				B64DC26428460B0D0063B8CF /* ScreenZ.xcdatamodeld */,
 				B64DC25F28460B0D0063B8CF /* Preview Content */,
 				B64DC27328464B920063B8CF /* AddThemeView.swift */,
-				B64DC27528464C820063B8CF /* utils.swift */,
 				B64DC2782846738E0063B8CF /* AllThemeView.swift */,
 				B64DC27A284673EA0063B8CF /* SettingsView.swift */,
+				B6D2437D2D14607200267EC4 /* UserDefaults+Helper.swift */,
 			);
 			path = ScreenZ;
 			sourceTree = "<group>";
@@ -116,6 +115,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B6D2437F2D1462D600267EC4 /* Model */,
 			);
 			name = ScreenZ;
 			productName = ScreenZ;
@@ -177,13 +179,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B64DC27428464B920063B8CF /* AddThemeView.swift in Sources */,
-				B64DC27B284673EA0063B8CF /* SettingsView.swift in Sources */,
-				B64DC26328460B0D0063B8CF /* Persistence.swift in Sources */,
+				B6D2437E2D14607200267EC4 /* UserDefaults+Helper.swift in Sources */,
+				B6D243B52D1477C100267EC4 /* SettingsView.swift in Sources */,
+				B6D243B72D1477CC00267EC4 /* AllThemeView.swift in Sources */,
 				B64DC25C28460B0D0063B8CF /* ContentView.swift in Sources */,
-				B64DC2792846738E0063B8CF /* AllThemeView.swift in Sources */,
-				B64DC27628464C820063B8CF /* utils.swift in Sources */,
-				B64DC26628460B0D0063B8CF /* ScreenZ.xcdatamodeld in Sources */,
+				B6D243B62D1477C600267EC4 /* AddThemeView.swift in Sources */,
 				B64DC25A28460B0D0063B8CF /* ScreenZApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -326,7 +326,7 @@
 				CODE_SIGN_ENTITLEMENTS = ScreenZ/ScreenZ.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 20241229;
 				DEVELOPMENT_ASSET_PATHS = "\"ScreenZ/Preview Content\"";
 				DEVELOPMENT_TEAM = QZ389N5Q44;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -338,7 +338,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.celeglow.ScreenZ;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -354,7 +355,7 @@
 				CODE_SIGN_ENTITLEMENTS = ScreenZ/ScreenZ.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 20241229;
 				DEVELOPMENT_ASSET_PATHS = "\"ScreenZ/Preview Content\"";
 				DEVELOPMENT_TEAM = QZ389N5Q44;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -366,7 +367,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.celeglow.ScreenZ;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -396,19 +398,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		B64DC26428460B0D0063B8CF /* ScreenZ.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				B64DC26528460B0D0063B8CF /* ScreenZ.xcdatamodel */,
-			);
-			currentVersion = B64DC26528460B0D0063B8CF /* ScreenZ.xcdatamodel */;
-			path = ScreenZ.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = B64DC24E28460B0D0063B8CF /* Project object */;
 }

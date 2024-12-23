@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) var viewContext
+    
     var body: some View {
         NavigationView {
             List {

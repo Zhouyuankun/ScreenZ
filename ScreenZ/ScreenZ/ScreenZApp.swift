@@ -7,17 +7,32 @@
 
 import SwiftUI
 import AVKit
-
+import SwiftData
+import Combine
 
 @main
 struct ScreenZApp: App {
     // inject into SwiftUI life-cycle via adaptor !!!
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    let persistenceController = PersistenceController.shared
-
+    
+    @Environment(\.openWindow) private var openWindow
+    
     var body: some Scene {
-        Settings {
-            
+        //Menu first, the window group will not show
+        MenuBarExtra("ScreenZ", image: "StatusBarButtonImage") {
+            Button("Show panel") {
+                openWindow(id: "mainPan")
+            }
+            Divider()
+            Button("Quit") {
+                NSApplication.shared.terminate(nil)
+            }
+        }
+        
+        WindowGroup(id: "mainPan") {
+            ContentView()
+                .frame(width: 1000, height: 800)
+                .modelContainer(for: [Video.self])
         }
     }
 }
@@ -29,136 +44,137 @@ extension Notification.Name {
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     
-    private var statusItem: NSStatusItem!
-    private var window: NSWindow!
-    var playerView: AVPlayerView!
-    var player: AVPlayer!
-    var mainWindow: NSWindow?
-    var currentVideoURL: URL?
+    var container: ModelContainer? = {
+        try? ModelContainer(for: Video.self)
+    }()
     
-
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
-        if !launchedBefore  {
-            constructFirstTime()
-            UserDefaults.standard.set(true, forKey: "launchedBefore")
-        }
-        constructMenu()
-        constructWallpaper()
-        constructPlayer()
-        constructObervers()
-        
-        //PersistenceController.shared.deleteAllEntryVideo()
-    }
+    private lazy var videoPlayer: AVPlayer = {
+        var player = AVPlayer()
+        player.isMuted = true
+        return player
+    }()
     
-    func constructMenu() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        if let button = statusItem.button {
-            button.image = NSImage(named: "StatusBarButtonImage")
-        }
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: NSLocalizedString("Show panel", comment: ""), action: #selector(showPanel), keyEquivalent: "S"))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(NSApplication.terminate), keyEquivalent: "Q"))
-        statusItem.menu = menu
-    }
+    private lazy var videoView: AVPlayerView = {
+        var view = AVPlayerView()
+        view.controlsStyle = AVPlayerViewControlsStyle.none
+        view.videoGravity = .resizeAspectFill
+        view.updatesNowPlayingInfoCenter = false
+        view.player = videoPlayer
+        return view
+    }()
     
-    func constructWallpaper() {
+    private lazy var videoWindow: NSWindow = {
         let rect = NSRect(x: 0, y: 0, width: NSScreen.main!.frame.width, height: NSScreen.main!.frame.height)
-        playerView = AVPlayerView()
-        
-        window = NSWindow(contentRect: rect, styleMask: .borderless, backing: .buffered, defer: false)
+        var window = NSWindow(contentRect: rect, styleMask: .borderless, backing: .buffered, defer: false)
         window.backgroundColor = NSColor.clear
         window.hasShadow = false
         window.isMovableByWindowBackground = false
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)))
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.stationary]
-        window.contentView = playerView
+        window.contentView = videoView
         window.center()
-        
-        let windowController = NSWindowController(window: window)
-        windowController.showWindow(self)
-    }
+        return window
+    }()
     
-    func constructObervers() {
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: nil, queue: nil) {[weak self] noti in
-            self?.player.seek(to: CMTime.zero)
-            self?.player.play()
+    private var cancellables = Set<AnyCancellable>()
+    
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        if !UserDefaults.standard.isInitialized {
+            constructFirstTime()
         }
-        NotificationCenter.default.addObserver(self, selector: #selector(changeVideo), name: Notification.Name("videourlChanged"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(refreshVideo), name: Notification.Name("MenuBarSettingChanged"), object: nil)
-        NSWorkspace.shared.notificationCenter.addObserver(
-                self,
-                selector: #selector(spaceChanged),
-                name: NSWorkspace.activeSpaceDidChangeNotification,
-                object: nil
-            )
-
-        NSWorkspace.shared.notificationCenter.addObserver(
-            self, selector: #selector(onWakeNote),
-            name: NSWorkspace.didWakeNotification, object: nil)
-
-        NSWorkspace.shared.notificationCenter.addObserver(
-            self, selector: #selector(onSleepNote),
-            name: NSWorkspace.willSleepNotification, object: nil)
+        loadVideoWindow()
+        loadVideoSource()
+        constructObservers()
     }
     
-    func constructPlayer() {
-        currentVideoURL = PersistenceController.shared.getCurrentVideoURL()
-        playVideo(currentVideoURL)
+    func loadVideoWindow() {
+        NSWindowController(window: videoWindow).showWindow(nil)
+    }
+    
+    func constructObservers() {
+        NotificationCenter.default.publisher(for: AVPlayerItem.didPlayToEndTimeNotification).sink {[weak self] _ in
+            self?.videoPlayer.seek(to: CMTime.zero)
+            self?.videoPlayer.play()
+        }.store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: Notification.Name("videourlChanged")).sink {[weak self] noti in
+            guard let url = noti.object as? URL else {return}
+            self?.playTempVideo(videoURL: url)
+        }.store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: Notification.Name("videoChanged")).sink {[weak self] noti in
+            let videoID = noti.object as? String
+            self?.playVideo(id: videoID)
+        }.store(in: &cancellables)
+        
+        
+        NotificationCenter.default.publisher(for: Notification.Name("MenuBarSettingChanged")).sink {[weak self] _ in
+            self?.playVideo(id: UserDefaults.standard.currentVideoID)
+        }.store(in: &cancellables)
+        
+        //The folllowing noti are from NSWorkspace.shared.notificationCenter
+        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.activeSpaceDidChangeNotification).sink {[weak self] _ in
+            guard let strongSelf = self else { return }
+            if strongSelf.testWallpaperWindowVisibility() {
+                strongSelf.videoPlayer.play()
+                print("play")
+            } else {
+                strongSelf.videoPlayer.pause()
+                print("pause")
+            }
+        }.store(in: &cancellables)
+        
+        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification).sink {[weak self] _ in
+            print("On wake up")
+            self?.videoPlayer.seek(to: CMTime.zero)
+            self?.videoPlayer.play()
+        }.store(in: &cancellables)
+        
+        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willSleepNotification).sink {[weak self] _ in
+            print("On sleep")
+            self?.videoPlayer.pause()
+        }.store(in: &cancellables)
+
+    }
+    
+    func loadVideoSource() {
+        playVideo(id: UserDefaults.standard.currentVideoID)
+    }
+    
+    func playVideo(id: String?) {
+        let (picURL, vidURL) = getResourcesURL(videoID: id)
+        if id != nil {UserDefaults.standard.set(currentVideoID: id!)}
+        refreshDesktop(picURL)
+        videoPlayer.replaceCurrentItem(with: AVPlayerItem(url: vidURL))
+        videoPlayer.play()
+    }
+    
+    func playTempVideo(videoURL: URL) {
+        var picURL: URL
+        if videoURL == Bundle.main.url(forResource: "demo", withExtension: "mp4")! {
+            picURL = Bundle.main.url(forResource: "demo", withExtension: "png")!
+        } else {
+            (picURL, _) = getResourcesURL(videoID: "tmp")
+        }
+        refreshDesktop(picURL)
+        videoPlayer.replaceCurrentItem(with: AVPlayerItem(url: videoURL))
+        videoPlayer.play()
     }
     
     func constructFirstTime() {
-        let context = PersistenceController.shared.container.viewContext
-        let fetchRequest = Preference.fetchRequest()
-        let result = try! context.fetch(fetchRequest).first
-        if result == nil {
-            let pref = Preference(context: context)
-            pref.enableAutoSetup = false
-            pref.enableMenuBar = false
-            pref.currentVideoURL = nil
-        }
-        
-    }
-    
-    func playVideo(_ videoURLOpt: URL?) {
-        var videoURL: URL
-        if videoURLOpt != nil {
-            videoURL = videoURLOpt!
-            currentVideoURL = videoURL
-            PersistenceController.shared.storeURL(url: videoURL)
-            refreshDesktop((videoURL.getFileName()!+".png").foundFile(in: .documentDirectory))
-        } else {
-            videoURL = Bundle.main.url(forResource: "demo", withExtension: "mp4")!
-            refreshDesktop(Bundle.main.url(forResource: "demo", withExtension: "png")!)
-        }
-            
-        player = AVPlayer(url: videoURL)
-        player.isMuted = true
-        playerView.player = player
-        playerView.controlsStyle = AVPlayerViewControlsStyle.none
-        playerView.videoGravity = .resizeAspectFill
-        playerView.updatesNowPlayingInfoCenter = false
-        player.play()
-        
+        UserDefaults.standard.initialize(status: true)
+        //TODO: something only do at first launch
     }
     
     func refreshDesktop(_ dstURL: URL) {
-        if getPreference().enableMenuBar {
+        if UserDefaults.standard.blackMenuBar {
+            try? NSWorkspace.shared.setDesktopImageURL(Bundle.main.url(forResource: "black", withExtension: "jpg")!, for: NSScreen.main!, options: [:])
+        } else {
             try? NSWorkspace.shared.setDesktopImageURL(URL(fileURLWithPath: ""), for: NSScreen.main!, options: [:])
             usleep(useconds_t(0.4 * Double(USEC_PER_SEC)))
             try? NSWorkspace.shared.setDesktopImageURL(dstURL, for: NSScreen.main!, options: [:])
-        } else {
-            try? NSWorkspace.shared.setDesktopImageURL(Bundle.main.url(forResource: "black", withExtension: "jpg")!, for: NSScreen.main!, options: [:])
         }
-    }
-    
-    func getPreference() -> Preference {
-        let context = PersistenceController.shared.container.viewContext
-        let fetchRequest = Preference.fetchRequest()
-        let result = try! context.fetch(fetchRequest).first!
-        return result
     }
     
     func testWallpaperWindowVisibility() -> Bool {
@@ -168,74 +184,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let targetN = infoList.filter { item in
             let wBounds = item["kCGWindowNumber"]
             let winid = wBounds as? Int
-            if let nonnilid = winid, nonnilid == window.windowNumber {
+            if let nonnilid = winid, nonnilid == videoWindow.windowNumber {
                 return true
             }
             return false
         }
         return targetN.isEmpty == false
     }
-    
-    @objc func changeVideo(notification: NSNotification) {
-        let url = notification.object as? URL
-        playVideo(url)
-    }
-    
-    @objc func refreshVideo(notification: NSNotification) {
-        playVideo(currentVideoURL)
-    }
-    
-    @objc func onWakeNote(note: NSNotification) {
-       
-        player.seek(to: CMTime.zero)
-        player.play()
-    }
-
-    @objc func onSleepNote(note: NSNotification) {
-        
-        player.pause()
-    }
-    
-    @objc func showPanel() {
-        if let mainWindow = mainWindow {
-            let controller = NSWindowController(window: mainWindow)
-            controller.showWindow(nil)
-        } else {
-            let contentView = NSHostingController(rootView: ContentView().environment(\.managedObjectContext, PersistenceController.shared.container.viewContext))
-            let window = NSWindow(contentViewController: contentView)
-            mainWindow = window
-            window.setContentSize(NSSize(width: 1000, height: 800))
-            window.center()
-            window.title = "ScreenZ"
-            let controller = NSWindowController(window: window)
-            controller.showWindow(nil)
-        }
-        
-        
-    }
-    
-    @objc func spaceChanged() {
-        if testWallpaperWindowVisibility() {
-            player.play()
-            print("play")
-        } else {
-            player.pause()
-            print("pause")
-        }
-    }
 }
 
-extension String {
-    func foundFile(in dir: FileManager.SearchPathDirectory) -> URL{
-        return FileManager.default.urls(for: dir, in: .userDomainMask)[0].appendingPathComponent(self)
-    }
-}
+//extension String {
+//    func foundPath(in dir: FileManager.SearchPathDirectory) -> URL{
+//        return FileManager.default.urls(for: dir, in: .userDomainMask)[0].appendingPathComponent(self)
+//    }
+//}
 
-extension URL {
-    func getFileName() -> String?{
-        if self.isFileURL {
-            return self.deletingPathExtension().lastPathComponent
-        }
-        return nil
+extension FileManager {
+    var appDocumentFolder: URL {
+        return self.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
+    func folderInDocument(folderName: String) -> URL {
+        return appDocumentFolder.appendingPathComponent(folderName)
     }
 }

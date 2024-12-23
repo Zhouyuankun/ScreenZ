@@ -9,7 +9,9 @@ import SwiftUI
 import AVKit
 
 struct AddThemeView: View {
-    @State var displayedVideoURL: URL?
+    @Environment(\.modelContext) private var context
+    
+    @State var displayedVideoURL: URL = Bundle.main.url(forResource: "demo", withExtension: "mp4")!
     @State var bkgImg: NSImage?
     @State var showSaveView: Bool = false
     @State var showOpenPanel: Bool = false
@@ -17,22 +19,21 @@ struct AddThemeView: View {
     @State var statusInfo: AddThemeStatus?
     @State var inputName: String = ""
     var alert2: NSAlert = NSAlert()
-    var avplayer: AVPlayer = AVPlayer(url:Bundle.main.url(forResource: "demo", withExtension: "mp4")!)
     
-    init() {
-        avplayer.isMuted = true
-    }
+    private let avplayer: AVPlayer = {
+        var player =  AVPlayer(url:Bundle.main.url(forResource: "demo", withExtension: "mp4")!)
+        player.isMuted = true
+        return player
+    }()
     
     var body: some View {
         VStack {
             VideoPlayer(player: avplayer)
             .frame(width: 192 * 4, height: 108 * 4)
             .onChange(of: displayedVideoURL) { oldValue, newValue in
-                if newValue != nil {
-                    oldValue?.stopAccessingSecurityScopedResource()
-                    avplayer.replaceCurrentItem(with: AVPlayerItem(url: newValue!))
-                    avplayer.play()
-                }
+                oldValue.stopAccessingSecurityScopedResource()
+                avplayer.replaceCurrentItem(with: AVPlayerItem(url: newValue))
+                avplayer.play()
             }
             HStack {
                 Button {
@@ -72,7 +73,7 @@ struct AddThemeView: View {
                 .alert("Wallpaper Name", isPresented: $showSaveView) {
                     TextField("Enter name here", text: $inputName)
                     Button("Save") {
-                        saveTheme(url: displayedVideoURL!)
+                        saveTheme(url: displayedVideoURL)
                     }
                     Button("Cancel") {
                         //do nothing
@@ -110,7 +111,10 @@ struct AddThemeView: View {
             Task {
                 do {
                     let bigImage = try await getThumbnailImageFromVideoUrl(url: monoURL)
-                    try bigImage.saveTo(("tmp.png").foundFile(in: .documentDirectory))
+                    
+                    try FileManager.default.createDirectory(at: FileManager.default.folderInDocument(folderName: "tmp"), withIntermediateDirectories: true)
+                    let (picURL, vidURL) = getResourcesURL(videoID: "tmp")
+                    try bigImage.saveTo(picURL)
                     displayedVideoURL = monoURL
                     bkgImg = bigImage
                     statusInfo = AddThemeStatus(type: .Success, description: "Chosed a video")
@@ -127,26 +131,27 @@ struct AddThemeView: View {
     }
     
     func applyPaper() {
-        if let url = displayedVideoURL {
-            NotificationCenter.default.post(name: Notification.Name("videourlChanged"), object: url)
-        } else {
-            statusInfo = AddThemeStatus(type: .Error, description: "Bad URL")
-            showStatusAlert = true
-        }
+        NotificationCenter.default.post(name: Notification.Name("videourlChanged"), object: displayedVideoURL)
+//        if let url =  {
+//            
+//        } else {
+//            statusInfo = AddThemeStatus(type: .Error, description: "Bad URL")
+//            showStatusAlert = true
+//        }
     }
     
     func storeResources(monoName: String, srcURL: URL) async -> AddThemeStatus {
-        let dstURL = (monoName+".mp4").foundFile(in: .documentDirectory)
+        let video = Video(name: monoName)
+        let (picURL, vidURL) = getResourcesURL(videoID: video.id)
         do {
-            try FileManager.default.copyItem(at: srcURL, to: dstURL)
+            //Ensure the parent folder is create
+            try FileManager.default.createDirectory(at: FileManager.default.folderInDocument(folderName: video.id), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: srcURL, to: vidURL)
             let bigImage = try await getThumbnailImageFromVideoUrl(url: srcURL)
-            try bigImage.saveTo((monoName+".png").foundFile(in: .documentDirectory))
-            
-            let video = Video(context: PersistenceController.shared.container.viewContext)
-            video.name = monoName
-            video.url = dstURL
-            video.photo = (monoName+".png").foundFile(in: .documentDirectory)
-            try PersistenceController.shared.container.viewContext.save()
+            try bigImage.saveTo(picURL)
+
+            context.insert(video)
+            try context.save()
             return AddThemeStatus(type: .Success, description: "Saved Wallpaper")
         } catch(let error as NSError) {
             return AddThemeStatus(type: .Error, description: error.localizedDescription)
@@ -154,8 +159,8 @@ struct AddThemeView: View {
     }
     
     func saveTheme(url: URL) {
-        if inputName == "" || PersistenceController.shared.fileExists(inputName) {
-            statusInfo = AddThemeStatus(type: .Error, description: "Name invalid (null or duplicate)")
+        if inputName == "" {
+            statusInfo = AddThemeStatus(type: .Error, description: "Name is required")
             showStatusAlert = true
             return
         }
@@ -179,6 +184,7 @@ struct AddThemeView: View {
         let bigImage = NSImage(cgImage: cgThumbImage, size: NSSize(width: NSScreen.main!.frame.width, height: NSScreen.main!.frame.height))
         return bigImage
     }
+    
 }
 
 struct AddThemeView_Previews: PreviewProvider {
